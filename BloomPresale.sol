@@ -57,7 +57,7 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
             require(_whitelist[_msgSender()], "Not whitelisted");
         }
         require(msg.value >= _minBuy, "Min buy not met");
-        require(msg.value == _minBuy || msg.value == 100 ether || msg.value == 150 ether || msg.value == 200 ether || msg.value == _maxBuy, "Incorrect amount");
+        require(msg.value == _minBuy || msg.value == 100 ether || msg.value == 175 ether || msg.value == _maxBuy, "Incorrect amount");
         // amount of tokens user bought
         uint256 amount = msg.value / _price; // max should be 300000 token
         require((_amountBought[_msgSender()] * _price) + msg.value <= _maxBuy, "Exceeds max buy limit");
