@@ -69,9 +69,9 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
     function claim() public nonReentrant {
         require(_claimOn, "Claim not on");
         require(_amountClaimed[_msgSender()] < _amountBought[_msgSender()], "Nothing to claim");
+        uint256 amount = _amountBought[_msgSender()];
         require(amount >= IERC20(_token).balanceOf(address(this)), "Not enough balance in contract");
 
-        uint256 amount = _amountBought[_msgSender()];
         if(IERC20(_token).balanceOf(address(this)) < amount) {
             amount = IERC20(_token).balanceOf(address(this));
         }
