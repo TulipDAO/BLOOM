@@ -9,8 +9,8 @@ import "../utils/math/SafeMath.sol";
 import "./IDEXRouter.sol";
 
 /**
- * @title BloodPresale part of TulipDao
- * https://thetulipdao.com
+ *  $BLOOM Token Presale by TulipDAO
+ * https://thetulipdao.com/bloom
  */
 contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
     using SafeMath for uint256;
