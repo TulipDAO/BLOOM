@@ -134,7 +134,12 @@ contract Bloom is IERC20Metadata, Auth, Pausable {
 
     function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
         if(paused()) {
-            require(isAuthorized(sender) || sender == pair || sender == address(router) || sender == distributorAddress, "Paused");
+            require(isAuthorized(sender) ||
+            sender == pair ||
+            sender == address(router) ||
+            sender == distributorAddress ||
+            isFeeExempt[sender] ||
+            isDividendExempt[sender], "Paused");
         }
 
         if(inSwap){ return _basicTransfer(sender, recipient, amount); }
