@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./IDEXRouter.sol";
 
 /**
- *  $BLOOM Token Presale by TulipDAO
- * https://thetulipdao.com/bloom
+ * @title BloodPresale part of TulipDao
+ * https://thetulipdao.com
  */
 contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
     using SafeMath for uint256;
@@ -32,6 +32,10 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN");       // df8b4c520ffe197c5343c6f5aec59570151ef9a492f2c624fd45ddde6135ec42
 
+    receive() external payable {}
+
+    fallback() external payable {}
+
     constructor() {
         __BloomPresale_init_unchained();
     }
@@ -42,8 +46,8 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
         _price = 1 ether; // 1000000000000000000 wei to get 600000000000000000000 wei of token
         _price = _price / 600; // 1666666666666666 wei (0.001666666666666666 ether)
         _minBuy = 50 ether;
-        _maxBuy = 500 ether;
-        _totalPresale = 27272727  ether; // total token available for presale
+        _maxBuy = 250 ether;
+        _totalPresale = 27272727 ether; // total token available for presale
         _router = 0x16327E3FbDaCA3bcF7E38F5Af2599D2DDc33aE52; // spirit router
     }
 
@@ -53,6 +57,7 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
             require(_whitelist[_msgSender()], "Not whitelisted");
         }
         require(msg.value >= _minBuy, "Min buy not met");
+        require(msg.value == _minBuy || msg.value == 100 ether || msg.value == 150 ether || msg.value == 200 ether || msg.value == _maxBuy, "Incorrect amount");
         // amount of tokens user bought
         uint256 amount = msg.value / _price; // max should be 300000 token
         require((_amountBought[_msgSender()] * _price) + msg.value <= _maxBuy, "Exceeds max buy limit");
@@ -64,6 +69,7 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
     function claim() public nonReentrant {
         require(_claimOn, "Claim not on");
         require(_amountClaimed[_msgSender()] < _amountBought[_msgSender()], "Nothing to claim");
+        require(amount >= IERC20(_token).balanceOf(address(this)), "Not enough balance in contract");
 
         uint256 amount = _amountBought[_msgSender()];
         if(IERC20(_token).balanceOf(address(this)) < amount) {
@@ -181,10 +187,13 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
         return _publicBuy;
     }
 
-    function addLiquidity() public onlyRole(ADMIN_ROLE) {
+    /**
+     * @dev add specified amount to liquidity
+     * amountToken should be 31818182 ether
+     * amountFTM should be 60000 ether
+     */
+    function addLiquidity(uint256 amountToken, uint256 amountFTM) public onlyRole(ADMIN_ROLE) {
         // add to liquidity
-        uint256 amountToken = 31818182 ether;
-        uint256 amountFTM = 60000 ether;
         if(amountFTM > address(this).balance) {
             amountFTM = address(this).balance;
         }
