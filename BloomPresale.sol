@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./IDEXRouter.sol";
 
@@ -43,11 +44,12 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
     function __BloomPresale_init_unchained() internal {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(ADMIN_ROLE, _msgSender());
-        _price = 1 ether; // 1000000000000000000 wei to get 600000000000000000000 wei of token
-        _price = _price / 600; // 1666666666666666 wei (0.001666666666666666 ether)
+        _price = 1 ether;                           // 1000000000000000000 wei to get 600000000000000000000 wei of token
+        _price = _price / 600;                      // 1666666666666666 wei (0.001666666666666666 ether)
         _minBuy = 50 ether;
         _maxBuy = 250 ether;
-        _totalPresale = 27272727 ether; // total token available for presale
+        _totalPresale = 27272727 ether;             // total token available for presale
+        _totalPresale = _totalPresale / (10 ** 9);  // Bloom decimals
         _router = 0x16327E3FbDaCA3bcF7E38F5Af2599D2DDc33aE52; // spirit router
     }
 
@@ -59,8 +61,9 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
         require(msg.value >= _minBuy, "Min buy not met");
         require(msg.value == _minBuy || msg.value == 100 ether || msg.value == 175 ether || msg.value == _maxBuy, "Incorrect amount");
         // amount of tokens user bought
-        uint256 amount = msg.value / _price; // max should be 300000 token
-        require((_amountBought[_msgSender()] * _price) + msg.value <= _maxBuy, "Exceeds max buy limit");
+        uint256 amount = msg.value / _price; // max should be 150000 token
+        amount = amount * (10 ** IERC20Metadata(_token).decimals());
+        require((_amountBought[_msgSender()] * _price / (10 ** IERC20Metadata(_token).decimals())) + msg.value <= _maxBuy, "Exceeds max buy limit");
         require(_totalBought + amount <= _totalPresale, "Exceeds supply");
         _amountBought[_msgSender()] += amount;
         _totalBought += amount;
@@ -70,8 +73,8 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
         require(_claimOn, "Claim not on");
         require(_amountClaimed[_msgSender()] < _amountBought[_msgSender()], "Nothing to claim");
         uint256 amount = _amountBought[_msgSender()];
-        require(amount >= IERC20(_token).balanceOf(address(this)), "Not enough balance in contract");
-        
+        require(amount <= IERC20(_token).balanceOf(address(this)), "Not enough balance in contract");
+
         IERC20(_token).transferFrom(address(this), _msgSender(), amount);
         _amountClaimed[_msgSender()] += amount;
     }
@@ -186,7 +189,7 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
 
     /**
      * @dev add specified amount to liquidity
-     * amountToken should be 31818182 ether
+     * amountToken should be 31818182 ether (in wei value / 10**9 (bloom decimals))
      * amountFTM should be 60000 ether
      */
     function addLiquidity(uint256 amountToken, uint256 amountFTM) public onlyRole(ADMIN_ROLE) {
