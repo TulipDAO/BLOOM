@@ -197,7 +197,7 @@ contract BloomPresale is AccessControlEnumerable, ReentrancyGuard {
         if(amountFTM > address(this).balance) {
             amountFTM = address(this).balance;
         }
-        IDEXRouter(_router).addLiquidityETH(_token, amountToken, amountToken, amountFTM, address(this), block.timestamp);
+        IDEXRouter(_router).addLiquidityETH{value: amountFTM}(_token, amountToken, amountToken, amountFTM, address(this), block.timestamp);
     }
 
     /**
